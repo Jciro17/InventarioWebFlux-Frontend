@@ -1,10 +1,14 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { productos as api } from '../api.js'
+import { useMensajes } from 'minifront-mensajes/vue'
+import { mensajes as mensajesApi, productos as api } from '../api.js'
 import { useToasts } from '../composables/useToasts.js'
+import { CODIGOS } from '../messageucolab.js'
 import AlertaStock from '../components/AlertaStock.vue'
 
 const { mostrar } = useToasts()
+const mensajes = useMensajes()
+const estado = ref(null)
 
 const lista = ref([])
 const vacio = () => ({ nombre: '', sku: '', cantidad: 0, stockMinimo: 5 })
@@ -37,12 +41,13 @@ function editar(p) {
 }
 
 async function guardar() {
-  // Validación en la pantalla, antes de llamar al backend
+  // Validación en la pantalla, antes de llamar al backend: el texto lo pide el front a MessageUcoLab
   if (!form.nombre.trim() || !form.sku.trim() || form.cantidad < 0 || form.stockMinimo < 0) {
-    mostrar({ title: 'Datos del producto incompletos', content: 'Revisa nombre, SKU, cantidad y stock mínimo antes de guardar.' })
+    mostrar(await mensajes.get('MSG_INVALID'))
     return
   }
   try {
+    // Las demás respuestas ya traen el texto de MessageUcoLab: lo resuelve el backend
     const datos = { ...form, nombre: form.nombre.trim(), sku: form.sku.trim() }
     mostrar(editandoId.value ? await api.actualizar(editandoId.value, datos) : await api.crear(datos))
     limpiar()
@@ -76,10 +81,68 @@ async function confirmarMovimiento() {
   }
 }
 
+// Muestra de dónde sale cada texto, en el backend y en el front: MessageUcoLab o el respaldo
+async function comprobar() {
+  estado.value = { cargando: true, filas: [] }
+  mensajes.clearCache()
+  let backend = []
+  let errorBackend = ''
+  try {
+    backend = await mensajesApi.estado()
+  } catch (err) {
+    errorBackend = err.message
+  }
+  const filas = []
+  for (const code of CODIGOS) {
+    const delBack = backend.find((m) => m.code === code)
+    const delFront = await mensajes.get(code)
+    filas.push({
+      code,
+      title: delFront.title,
+      backend: delBack ? delBack.source : null,
+      front: delFront.source,
+      error: delBack?.error || delFront.error?.message || errorBackend
+    })
+  }
+  estado.value = { cargando: false, filas }
+}
+
+async function limpiarCache() {
+  mensajes.clearCache()
+  try {
+    await mensajesApi.limpiarCache()
+    mostrar({ title: 'Caché limpiada', content: 'Los próximos textos se piden de nuevo a MessageUcoLab.' })
+  } catch (err) {
+    error(err)
+  }
+}
+
+const origen = (source) => (source === 'fallback' ? 'Respaldo' : source ? 'MessageUcoLab' : '—')
+
 onMounted(cargar)
 </script>
 
 <template>
+  <section v-if="estado" class="msg-status-panel">
+    <div class="section-header">
+      <h3>Mensajes de esta aplicación</h3>
+      <button class="btn btn-ghost btn-sm" @click="estado = null">Cerrar</button>
+    </div>
+    <p v-if="estado.cargando" class="muted">Comprobando…</p>
+    <table v-else class="tabla">
+      <thead><tr><th>Código</th><th>Título</th><th>Backend</th><th>Front</th><th>Error</th></tr></thead>
+      <tbody>
+        <tr v-for="f in estado.filas" :key="f.code">
+          <td><code>{{ f.code }}</code></td>
+          <td>{{ f.title }}</td>
+          <td><span v-if="f.backend" :class="['badge', f.backend === 'fallback' ? 'badge-warning' : 'badge-ok']">{{ origen(f.backend) }}</span><span v-else class="muted">Solo en el front</span></td>
+          <td><span :class="['badge', f.front === 'fallback' ? 'badge-warning' : 'badge-ok']">{{ origen(f.front) }}</span></td>
+          <td class="error-cell">{{ f.error }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
   <section v-if="conAlerta.length" class="card alertas">
     <h2>Productos por reabastecer</h2>
     <ul>
@@ -116,6 +179,10 @@ onMounted(cargar)
   <section class="card">
     <div class="section-header">
       <h2>Productos</h2>
+      <div class="acciones">
+        <button class="btn btn-ghost btn-sm" @click="comprobar">🔄 Comprobar conexión</button>
+        <button class="btn btn-ghost btn-sm" @click="limpiarCache">🗑 Limpiar caché</button>
+      </div>
     </div>
     <table class="tabla">
       <thead>

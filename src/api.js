@@ -16,3 +16,9 @@ export const productos = {
   eliminar: (id) => api('DELETE', `/api/productos/${id}`),
   movimiento: (id, tipo, cantidad) => api('POST', `/api/productos/${id}/${tipo}?cantidad=${cantidad}`)
 }
+
+// Estado de los mensajes que resuelve el backend
+export const mensajes = {
+  estado: () => api('GET', '/api/mensajes/estado'),
+  limpiarCache: () => api('POST', '/api/mensajes/limpiar-cache')
+}

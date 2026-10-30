@@ -68,3 +68,4 @@ a { color: var(--accent); text-decoration: none; }
   .field-actions { grid-column: 1 / -1; }
   .tabla th:nth-child(4), .tabla td:nth-child(4) { display: none; }
 }
+.admin-mensajes { display: block; min-height: 400px; margin-top: 16px; border-radius: var(--radius); overflow: hidden; }

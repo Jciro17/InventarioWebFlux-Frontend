@@ -9,6 +9,10 @@ const { toasts } = useToasts()
     <div v-for="t in toasts" :key="t.id" class="toast">
       <strong>{{ t.title }}</strong>
       <span>{{ t.content }}</span>
+      <!-- source lo agregan el backend (ResolvedMessage) y el cliente de mensajes del front -->
+      <small v-if="t.source" class="toast-source">
+        {{ t.source === 'fallback' ? '⚠ respaldo local' : '✓ MessageUcoLab' }}
+      </small>
     </div>
   </TransitionGroup>
 </template>
