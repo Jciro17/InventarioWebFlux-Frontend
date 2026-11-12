@@ -17,8 +17,12 @@ export const productos = {
   movimiento: (id, tipo, cantidad) => api('POST', `/api/productos/${id}/${tipo}?cantidad=${cantidad}`)
 }
 
-// Estado de los mensajes que resuelve el backend
+// Mensajes que resuelve el backend con su identidad de servicio
 export const mensajes = {
+  obtener: (code, vars = {}) => {
+    const query = new URLSearchParams(vars).toString()
+    return api('GET', `/api/mensajes/${encodeURIComponent(code)}${query ? `?${query}` : ''}`)
+  },
   estado: () => api('GET', '/api/mensajes/estado'),
   limpiarCache: () => api('POST', '/api/mensajes/limpiar-cache')
 }

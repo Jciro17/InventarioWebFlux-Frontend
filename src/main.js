@@ -1,8 +1,7 @@
 import { createApp } from 'vue'
-import { MessageUcoLabPlugin } from 'minifront-mensajes/vue'
 import App from './App.vue'
 import router from './router.js'
-import { mensajesConfig } from './messageucolab.js'
 import './assets/app.css'
 
-createApp(App).use(router).use(MessageUcoLabPlugin, mensajesConfig).mount('#app')
+// Los textos de la pantalla los resuelve el backend de Inventario (src/composables/useMensajes.js).
+createApp(App).use(router).mount('#app')
