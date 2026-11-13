@@ -7,10 +7,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test": "node --test",
     "preview": "vite preview"
   },
   "dependencies": {
-    "minifront-mensajes": "github:Jciro17/minifront-mensajes",
+    "minifront-mensajes": "git+https://github.com/Jciro17/minifront-mensajes.git#f22393d29132b6c8378b2db74e711f737fd16538",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },

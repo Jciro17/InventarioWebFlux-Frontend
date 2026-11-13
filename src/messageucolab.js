@@ -4,7 +4,7 @@
 const env = import.meta.env
 
 export const adminConfig = {
-  applicationName: env.VITE_MESSAGEUCOLAB_APPLICATION_NAME || 'Inventario UCO',
+  applicationName: env.VITE_MESSAGEUCOLAB_APPLICATION_NAME || 'Inventario',
   environmentName: env.VITE_MESSAGEUCOLAB_ENVIRONMENT_NAME || 'Develop',
   loginUrl: env.VITE_SECURITY_LOGIN_URL || 'http://localhost:5173/login'
 }

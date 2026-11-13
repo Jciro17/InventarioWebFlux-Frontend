@@ -12,7 +12,7 @@ const aviso = useMensaje(
 </script>
 
 <template>
-  <li :class="producto.sinExistencia ? 'qty-zero' : 'qty-low'" :title="aviso.title">
-    {{ aviso.content }}
+  <li :class="producto.sinExistencia ? 'qty-zero' : 'qty-low'" :title="aviso.error || aviso.title">
+    {{ aviso.error || aviso.content }}
   </li>
 </template>
