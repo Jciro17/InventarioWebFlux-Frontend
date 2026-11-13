@@ -1,9 +1,8 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { mensajes as mensajesApi, productos as api } from '../api.js'
 import { obtenerMensaje } from '../composables/useMensajes.js'
 import { useToasts } from '../composables/useToasts.js'
-import AlertaStock from '../components/AlertaStock.vue'
 
 const { mostrar } = useToasts()
 const estado = ref(null)
@@ -13,8 +12,6 @@ const vacio = () => ({ nombre: '', sku: '', cantidad: 0, stockMinimo: 5 })
 const form = reactive(vacio())
 const editandoId = ref(null)
 const modal = reactive({ abierto: false, id: null, tipo: 'entrada', cantidad: 1 })
-
-const conAlerta = computed(() => lista.value.filter((p) => p.stockBajo || p.sinExistencia))
 
 function error(err) {
   mostrar({ title: 'Error', content: err.message })
@@ -39,12 +36,12 @@ function editar(p) {
 }
 
 async function guardar() {
-  // Validación en la pantalla, antes de guardar: el texto lo resuelve el backend con MessageUcoLab
-  if (!form.nombre.trim() || !form.sku.trim() || form.cantidad < 0 || form.stockMinimo < 0) {
-    mostrar(await obtenerMensaje('MSG_INVALID'))
-    return
-  }
   try {
+    // Validación en la pantalla, antes de guardar: el texto lo resuelve el backend con MessageUcoLab
+    if (!form.nombre.trim() || !form.sku.trim() || form.cantidad < 0 || form.stockMinimo < 0) {
+      mostrar(await obtenerMensaje('MSG_INVALID'))
+      return
+    }
     // Las demás respuestas ya traen el texto de MessageUcoLab: lo resuelve el backend
     const datos = { ...form, nombre: form.nombre.trim(), sku: form.sku.trim() }
     mostrar(editandoId.value ? await api.actualizar(editandoId.value, datos) : await api.crear(datos))
@@ -79,7 +76,7 @@ async function confirmarMovimiento() {
   }
 }
 
-// Muestra de dónde sale cada texto que resuelve el backend: MessageUcoLab o el respaldo
+// Consulta los mensajes y muestra el error recibido si alguno no se puede resolver.
 async function comprobar() {
   estado.value = { cargando: true, filas: [] }
   try {
@@ -99,7 +96,7 @@ async function limpiarCache() {
   }
 }
 
-const origen = (source) => (source === 'fallback' ? 'Respaldo' : source ? 'MessageUcoLab' : '—')
+const origen = (source) => (source === 'api' ? 'MessageUcoLab' : '—')
 
 onMounted(cargar)
 </script>
@@ -118,18 +115,11 @@ onMounted(cargar)
         <tr v-for="f in estado.filas" :key="f.code">
           <td><code>{{ f.code }}</code></td>
           <td>{{ f.title }}</td>
-          <td><span :class="['badge', f.source === 'fallback' ? 'badge-warning' : 'badge-ok']">{{ origen(f.source) }}</span></td>
+          <td><span class="badge badge-ok">{{ origen(f.source) }}</span></td>
           <td class="error-cell">{{ f.error }}</td>
         </tr>
       </tbody>
     </table>
-  </section>
-
-  <section v-if="conAlerta.length" class="card alertas">
-    <h2>Productos por reabastecer</h2>
-    <ul>
-      <AlertaStock v-for="p in conAlerta" :key="p.id" :producto="p" />
-    </ul>
   </section>
 
   <section class="card form-card">

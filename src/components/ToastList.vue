@@ -10,8 +10,8 @@ const { toasts } = useToasts()
       <strong>{{ t.title }}</strong>
       <span>{{ t.content }}</span>
       <!-- source lo agregan el backend (ResolvedMessage) y el cliente de mensajes del front -->
-      <small v-if="t.source" class="toast-source">
-        {{ t.source === 'fallback' ? '⚠ respaldo local' : '✓ MessageUcoLab' }}
+      <small v-if="t.source === 'api'" class="toast-source">
+        ✓ MessageUcoLab
       </small>
     </div>
   </TransitionGroup>
