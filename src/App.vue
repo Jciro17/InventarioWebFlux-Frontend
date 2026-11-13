@@ -1,11 +1,18 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import ToastList from './components/ToastList.vue'
 import { useSesion } from './composables/useSesion.js'
+import { useAvisos } from './composables/useAvisos.js'
 
 const { usuario, revisada, revisar, iniciarSesion } = useSesion()
+// Avisos de cambios en los mensajes del ambiente que consume el backend de Inventario
+const avisos = useAvisos()
 
-onMounted(revisar)
+onMounted(() => {
+  revisar()
+  avisos.escuchar()
+})
+onUnmounted(avisos.detener)
 </script>
 
 <template>

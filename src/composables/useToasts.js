@@ -5,13 +5,13 @@ const toasts = reactive([])
 let siguienteId = 0
 
 export function useToasts() {
-  function mostrar(aviso) {
+  function mostrar(aviso, duracionMs = 4500) {
     const toast = { id: siguienteId++, ...aviso }
     toasts.push(toast)
     setTimeout(() => {
       const i = toasts.findIndex((t) => t.id === toast.id)
       if (i >= 0) toasts.splice(i, 1)
-    }, 4500)
+    }, duracionMs)
   }
   return { toasts, mostrar }
 }
